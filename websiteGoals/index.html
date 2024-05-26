@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="pl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TWOJE CELE FINANSOWE</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <header>
+        <h1>Twoje cele finansowe</h1>
+        <nav>
+            <ul>
+                <li><a href="#home">Strona główna</a></li>
+                <li><a href="#info">Informacje</a></li>
+                <li><a href="#cele">Cele</a></li>
+                <li><a href="#statystyki">Statystyki</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <section id="home">
+            <h2>Zarządzaj swoimi celami z łatwością</h2>
+            <p>Witaj na naszej stronie, gdzie pomagamy Ci skutecznie planować i realizować Twoje cele finansowe. Dołącz
+                do nas i zacznij spełniać swoje marzenia już dziś!</p>
+            <img src="1.png" alt="">
+        </section>
+
+        <section id="info">
+            <h2>Informacje</h2>
+            <p>Nasza aplikacja została stworzona z myślą o ludziach, którzy chcą skutecznie zarządzać swoimi finansowymi
+                celami i marzeniami. Dzięki naszym narzędziom możesz łatwo planować, monitorować postępy i realizować
+                swoje cele</p>
+            <div class="galeria-zdjec">
+                <img src="2.png" alt="">
+                <img src="3.png" alt="">
+                <img src="4.png" alt="">
+            </div>
+        </section>
+
+        <section id="cele">
+            <h2>Dodaj nowy cel finansowy</h2>
+            <button id="showFormButton">Dodaj Nowy Cel</button><br><br>
+            <div id="formContainer" style="display: none;">
+                <form id="goalForm">
+                    <label for="goalName">Nazwa celu:</label>
+                    <input type="text" id="goalName" name="goalName" required><br><br>
+                    <label for="goalDesc">Opis celu:</label>
+                    <input type="text" id="goalDesc" name="goalDesc" required><br><br>
+                    <label for="price">Kwota:</label>
+                    <input type="number" id="price" name="price" required><br><br>
+                    <label for="savedAmount">Zaoszczędzona kwota:</label>
+                    <input type="number" id="savedAmount" name="savedAmount" required><br><br>
+                    <button type="submit">Dodaj cel</button>
+                </form>
+                <br>
+                <div id="message"></div>
+            </div>
+            <h2>Obecne cele</h2>
+            <table id="goalsTable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nazwa celu</th>
+                        <th>Opis celu</th>
+                        <th>Kwota</th>
+                        <th>Zaoszczędzona kwota</th>
+                        <th>Brakująca kwota</th>
+                        <th>Akcje</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </section>
+
+
+        <section id="statystyki">
+            <h2>Statystyki</h2>
+            <label for="months">Podaj ilość miesięcy:</label>
+            <input type="number" id="months" name="months" value="12" min="1">
+            <button id="loadStatsButton">Pobierz statystyki</button>
+            <table id="statsTable">
+                <thead>
+                    <tr>
+                        <th>Parametr</th>
+                        <th>Wartość</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Ilość celów</td>
+                        <td id="amountOfGoals"></td>
+                    </tr>
+                    <tr>
+                        <td>Łączna potrzebna kwota</td>
+                        <td id="sumPrices"></td>
+                    </tr>
+                    <tr>
+                        <td>Łączna zgromadzona kwota</td>
+                        <td id="sumSavedCash"></td>
+                    </tr>
+                    <tr>
+                        <td>Kwota potrzebna do realizacji celów</td>
+                        <td id="neededCash"></td>
+                    </tr>
+                    <tr>
+                        <td>Średnia miesięczna kwota do odłożenia</td>
+                        <td id="cashPerMonth"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+
+
+    </main>
+
+    <footer>
+        <p>&copy; Tomasz Morgaś, Dawid Mazur</p>
+    </footer>
+    <script>
+        document.getElementById('showFormButton').addEventListener('click', function () {
+            const formContainer = document.getElementById('formContainer');
+            formContainer.style.display = formContainer.style.display === 'none' || formContainer.style.display === '' ? 'block' : 'none';
+        });
+
+        document.getElementById('goalForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            const goalData = {
+                goalName: document.getElementById('goalName').value,
+                goalDesc: document.getElementById('goalDesc').value,
+                price: parseFloat(document.getElementById('price').value),
+                savedAmount: parseFloat(document.getElementById('savedAmount').value)
+            };
+
+            fetch('http://localhost:8080/goals', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(goalData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('message').innerText = 'Cel został dodany pomyślnie!';
+                document.getElementById('goalForm').reset();
+                loadGoals();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('message').innerText = 'Wystąpił błąd podczas dodawania celu.';
+            });
+        });
+
+        function loadGoals() {
+            fetch('http://localhost:8080/goals')
+                .then(response => response.json())
+                .then(data => {
+                    const tableBody = document.querySelector('#goalsTable tbody');
+                    tableBody.innerHTML = '';
+                    data.forEach(goal => {
+                        const missingAmount = goal.price - goal.savedAmount;
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${goal.id}</td>
+                            <td>${goal.goalName}</td>
+                            <td>${goal.goalDesc}</td>
+                            <td>${goal.price}</td>
+                            <td>${goal.savedAmount}</td>
+                            <td>${missingAmount}</td>
+                            <td>
+                                <button onclick="deleteGoal(${goal.id})">Usuń</button>
+                                <button onclick="showAddSavedAmount(${goal.id})">Dodaj zaoszczędzoną kwotę</button>
+                                <div id="addSavedAmountContainer-${goal.id}" style="display: none;">
+                                    <input type="number" id="addSavedAmount-${goal.id}" placeholder="Kwota">
+                                    <button onclick="addSavedAmount(${goal.id})">Dodaj</button>
+                                </div>
+                            </td>
+                        `;
+                        tableBody.appendChild(row);
+                    });
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+        function showAddSavedAmount(id) {
+            const container = document.getElementById(`addSavedAmountContainer-${id}`);
+            container.style.display = container.style.display === 'none' || container.style.display === '' ? 'block' : 'none';
+        }
+
+        function addSavedAmount(id) {
+            const amountInput = document.getElementById(`addSavedAmount-${id}`);
+            const additionalAmount = parseFloat(amountInput.value);
+
+            if (isNaN(additionalAmount) || additionalAmount <= 0) {
+                alert('Podaj prawidłową kwotę.');
+                return;
+            }
+
+            fetch(`http://localhost:8080/goals/${id}`)
+                .then(response => response.json())
+                .then(goal => {
+                    const updatedSavedAmount = goal.savedAmount + additionalAmount;
+
+                    const updatedGoal = {
+                        id: goal.id,
+                        goalName: goal.goalName,
+                        goalDesc: goal.goalDesc,
+                        price: goal.price,
+                        savedAmount: updatedSavedAmount
+                    };
+
+                    return fetch(`http://localhost:8080/goals`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(updatedGoal)
+                    });
+                })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('message').innerText = 'Zaoszczędzona kwota została zaktualizowana pomyślnie!';
+                    loadGoals();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementById('message').innerText = 'Wystąpił błąd podczas aktualizacji zaoszczędzonej kwoty.';
+                });
+        }
+
+        function deleteGoal(id) {
+            fetch(`http://localhost:8080/goals/${id}`, {
+                method: 'DELETE'
+            })
+            .then(response => {
+                if (response.ok) {
+                    document.getElementById('message').innerText = 'Cel został usunięty pomyślnie!';
+                    loadGoals();
+                } else {
+                    document.getElementById('message').innerText = 'Wystąpił błąd podczas usuwania celu.';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('message').innerText = 'Wystąpił błąd podczas usuwania celu.';
+            });
+        }
+
+        function loadStats(months) {
+            fetch(`http://localhost:8080/goals/stats/${months}`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('amountOfGoals').innerText = data.amountOfGoals;
+                    document.getElementById('sumPrices').innerText = data.sumPrices.toFixed(2);
+                    document.getElementById('sumSavedCash').innerText = data.sumSavedCash.toFixed(2);
+                    document.getElementById('neededCash').innerText = data.neededCash.toFixed(2);
+                    document.getElementById('cashPerMonth').innerText = data.cashPerMonth.toFixed(2);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementById('message').innerText = 'Wystąpił błąd podczas ładowania statystyk.';
+                });
+        }
+
+        document.getElementById('loadStatsButton').addEventListener('click', function () {
+            const months = document.getElementById('months').value;
+            loadStats(months);
+        });
+
+        document.addEventListener('DOMContentLoaded', function () {
+            loadGoals();
+            loadStats(12); 
+        });
+
+    </script>
+</body>
+
+</html>
