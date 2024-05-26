@@ -5,7 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TWOJE CELE FINANSOWE</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body>
@@ -24,16 +26,13 @@
     <main>
         <section id="home">
             <h2>Zarządzaj swoimi celami z łatwością</h2>
-            <p>Witaj na naszej stronie, gdzie pomagamy Ci skutecznie planować i realizować Twoje cele finansowe. Dołącz
-                do nas i zacznij spełniać swoje marzenia już dziś!</p>
+            <p>Witaj na naszej stronie, gdzie pomagamy Ci skutecznie planować i realizować Twoje cele finansowe. Dołącz do nas i zacznij spełniać swoje marzenia już dziś!</p>
             <img src="1.png" alt="">
         </section>
 
         <section id="info">
             <h2>Informacje</h2>
-            <p>Nasza aplikacja została stworzona z myślą o ludziach, którzy chcą skutecznie zarządzać swoimi finansowymi
-                celami i marzeniami. Dzięki naszym narzędziom możesz łatwo planować, monitorować postępy i realizować
-                swoje cele</p>
+            <p>Nasza aplikacja została stworzona z myślą o ludziach, którzy chcą skutecznie zarządzać swoimi finansowymi celami i marzeniami. Dzięki naszym narzędziom możesz łatwo planować, monitorować postępy i realizować swoje cele</p>
             <div class="galeria-zdjec">
                 <img src="2.png" alt="">
                 <img src="3.png" alt="">
@@ -77,7 +76,6 @@
             </table>
         </section>
 
-
         <section id="statystyki">
             <h2>Statystyki</h2>
             <label for="months">Podaj ilość miesięcy:</label>
@@ -87,7 +85,7 @@
                 <thead>
                     <tr>
                         <th>Parametr</th>
-                        <th>Wartość</th>
+                        <th>Wartość</</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -113,9 +111,8 @@
                     </tr>
                 </tbody>
             </table>
+            <canvas id="goalsChart" width="400" height="200"></canvas>
         </section>
-
-
     </main>
 
     <footer>
@@ -256,11 +253,47 @@
                     document.getElementById('sumSavedCash').innerText = data.sumSavedCash.toFixed(2);
                     document.getElementById('neededCash').innerText = data.neededCash.toFixed(2);
                     document.getElementById('cashPerMonth').innerText = data.cashPerMonth.toFixed(2);
+
+                    updateChart(data);
                 })
                 .catch(error => {
                     console.error('Error:', error);
                     document.getElementById('message').innerText = 'Wystąpił błąd podczas ładowania statystyk.';
                 });
+        }
+
+        function updateChart(data) {
+            const ctx = document.getElementById('goalsChart').getContext('2d');
+            const myChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Łączna potrzebna kwota', 'Łączna zgromadzona kwota', 'Kwota potrzebna do realizacji celów', 'Średnia miesięczna kwota do odłożenia'],
+                    datasets: [{
+                        label: 'Statystyki celów finansowych',
+                        data: [data.sumPrices, data.sumSavedCash.toFixed(2), data.neededCash, data.cashPerMonth],
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.2)',
+                            'rgba(54, 162, 235, 0.2)',
+                            'rgba(255, 206, 86, 0.2)',
+                            'rgba(75, 192, 192, 0.2)'
+                        ],
+                        borderColor: [
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(75, 192, 192, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
         }
 
         document.getElementById('loadStatsButton').addEventListener('click', function () {
@@ -272,7 +305,6 @@
             loadGoals();
             loadStats(12); 
         });
-
     </script>
 </body>
 
