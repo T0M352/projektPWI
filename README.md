@@ -1,0 +1,1 @@
+Backend uruchomić można za pomocą pliku jar w folderze projektPWI\backendGoals\build\libs ewentualnie za pomocą pliku bat startBackend do którego skrót znajduje sie w głównym folderze projektu. Frontend uruchamiamy poprzez otwarcie pliku index.html
